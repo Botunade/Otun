@@ -1,0 +1,5 @@
+{
+  "chrome": "com.android.chrome/com.google.android.apps.chrome.Main",
+  "whatsapp": "com.whatsapp/com.whatsapp.HomeActivity",
+  "telegram": "org.telegram.messenger/org.telegram.ui.LaunchActivity"
+}
