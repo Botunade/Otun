@@ -1,24 +1,56 @@
-#!/bin/bash
-# otun/intent_engine.sh - Normalizes input text
-
-if [ -z "$1" ]; then
-    echo ""
-    exit 1
-fi
+#!/data/data/com.termux/files/usr/bin/bash
 
 INPUT="$1"
 
-# Convert to lowercase
-NORMALIZED=$(echo "$INPUT" | tr '[:upper:]' '[:lower:]')
+# VALID COMMANDS
 
-# Trim leading and trailing spaces (using sed)
-NORMALIZED=$(echo "$NORMALIZED" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+if [[ "$INPUT" == *"open chrome"* ]] || [[ "$INPUT" == *"chrome"* ]]; then
+    am start -n com.android.chrome/com.google.android.apps.chrome.Main >/dev/null 2>&1
+    termux-tts-speak "Understood Boss"
+    exit
+fi
 
-# Remove noise words (like "please", "can you", "could you", "the")
-NORMALIZED=$(echo "$NORMALIZED" | sed -E 's/\b(please|can you|could you|the|open up|go to)\b//g')
+if [[ "$INPUT" == *"open whatsapp"* ]] || [[ "$INPUT" == *"whatsapp"* ]]; then
+    am start -n com.whatsapp/com.whatsapp.HomeActivity >/dev/null 2>&1
+    termux-tts-speak "Understood Boss"
+    exit
+fi
 
-# Clean up any resulting double spaces or new edge spaces
-NORMALIZED=$(echo "$NORMALIZED" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/[[:space:]]\+/ /g')
+if [[ "$INPUT" == *"open telegram"* ]] || [[ "$INPUT" == *"telegram"* ]]; then
+    am start -n org.telegram.messenger/org.telegram.ui.LaunchActivity >/dev/null 2>&1
+    termux-tts-speak "Understood Boss"
+    exit
+fi
 
-echo "$NORMALIZED"
-exit 0
+if [[ "$INPUT" == *"wifi"* ]]; then
+    am start -a android.settings.WIFI_SETTINGS >/dev/null 2>&1
+    termux-tts-speak "Understood Boss"
+    exit
+fi
+
+if [[ "$INPUT" == *"bluetooth"* ]]; then
+    am start -a android.settings.BLUETOOTH_SETTINGS >/dev/null 2>&1
+    termux-tts-speak "Understood Boss"
+    exit
+fi
+
+if [[ "$INPUT" == *"data"* ]]; then
+    am start -a android.settings.DATA_ROAMING_SETTINGS >/dev/null 2>&1
+    termux-tts-speak "Understood Boss"
+    exit
+fi
+
+if [[ "$INPUT" == *"home"* ]]; then
+    input keyevent 3
+    termux-tts-speak "Understood Boss"
+    exit
+fi
+
+if [[ "$INPUT" == *"back"* ]]; then
+    input keyevent 4
+    termux-tts-speak "Understood Boss"
+    exit
+fi
+
+# FALLBACK
+termux-tts-speak "I don't understand Boss"

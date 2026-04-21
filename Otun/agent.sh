@@ -1,59 +1,32 @@
-#!/bin/bash
-# otun/agent.sh - Main Loop Controller
+#!/data/data/com.termux/files/usr/bin/bash
 
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# STATE: IDLE or ACTIVE
-STATE="IDLE"
-
-echo "Otun V2 started. Currently in IDLE state."
-echo "Waiting for activation phrase..."
+BASE="$HOME/Otun"
+MODE="INACTIVE"
 
 while true; do
-    # Capture voice input
-    INPUT=$("$DIR/voice_loop.sh")
 
-    if [ -z "$INPUT" ]; then
-        # No input captured or user cancelled, continue looping
+    INPUT=$(bash $BASE/voice_loop.sh | tr '[:upper:]' '[:lower:]')
+
+    # ACTIVATION
+    if [[ "$INPUT" == *"activate agent"* ]]; then
+        MODE="ACTIVE"
+        termux-tts-speak "Yes Boss 😁"
         continue
     fi
 
-    # Normalize input using intent_engine
-    NORMALIZED=$("$DIR/intent_engine.sh" "$INPUT")
-
-    echo "Heard: $NORMALIZED"
-
-    if [ "$STATE" = "IDLE" ]; then
-        # In IDLE state, we only listen for the activation phrase
-        if [[ "$NORMALIZED" == *"activate otun"* ]]; then
-            echo "Activation detected."
-            "$DIR/tts.sh" "Yes Boss 😁"
-            STATE="ACTIVE"
-            echo "Entered ACTIVE state."
-        fi
-
-    elif [ "$STATE" = "ACTIVE" ]; then
-        # In ACTIVE state, check for deactivation first
-        if [[ "$NORMALIZED" == *"otun deactivate"* || "$NORMALIZED" == *"deactivate otun"* ]]; then
-            echo "Deactivation detected."
-            "$DIR/tts.sh" "Goodbye Boss"
-            echo "Exiting."
-            exit 0
-        fi
-
-        # Route to engine
-        "$DIR/router.sh" "$NORMALIZED"
-        ROUTE_STATUS=$?
-
-        if [ $ROUTE_STATUS -eq 0 ]; then
-            # Success response
-            "$DIR/tts.sh" "Understood Boss"
-        else
-            # Failure response
-            "$DIR/tts.sh" "I don't understand Boss"
-        fi
+    # DEACTIVATION
+    if [[ "$INPUT" == *"deactivate agent"* ]]; then
+        MODE="INACTIVE"
+        termux-tts-speak "Yes Boss 😁"
+        continue
     fi
 
-    # Small delay to prevent tight CPU looping if things fail fast
-    sleep 0.5
+    # Ignore if inactive
+    if [[ "$MODE" == "INACTIVE" ]]; then
+        continue
+    fi
+
+    # ACTIVE MODE → process commands
+    bash $BASE/intent_engine.sh "$INPUT"
+
 done
